@@ -1,0 +1,238 @@
+#include <stdio.h>
+#include <string.h>
+
+// DECLARACION DE VARIABLES GLOBALES
+
+// Variable número de estanterías (input)
+int num_estant;
+
+// Inicialización de base de datos
+char base_de_datos[10][6][4][15];
+int opcion;
+
+// Variables declaradas para la función de agregar estanterías
+int categ_estant;
+char letra_estant[2];  // Aumentado a 2 para incluir el terminador nulo
+int indice_estant_agreg = 0;
+
+// Variables declaradas para la función de agregar paquetes
+char paquete_categ[15];
+char paquete_nombre[15];
+char paquete_fecha[15];
+int indice_paquete;
+
+// Variables declaradas para la función de eliminar estanterías
+int indice_estant_elim;
+
+// Variables declaradas para la función de eliminar paquetes
+int indice_paquete_elim;
+int indice_paquete_estant_elim;
+
+// Variables declaradas para porcentaje
+int porcent;
+
+// Contadores
+int a, b, c;
+
+// FUNCIONES (modos del menú)
+int agregar_estanteria() {
+    if (indice_estant_agreg >= num_estant) {
+        printf("No se pueden agregar más estanterías.\n");
+        return -1;
+    }
+
+    // Pido dos valores de identificación de estantería que van en el índice 0 y le asigno un valor a los restantes
+    // Notar que el máximo de caracteres posibles a escribir por string es 15
+    printf("Ingrese letra asignada de la estanteria: ");
+    scanf("%1s", letra_estant);
+    printf("Ingrese categoria de la estanteria: ");
+    scanf("%d", &categ_estant);
+
+    strncpy(base_de_datos[indice_estant_agreg][0][0], letra_estant, 15);  // copia count caracteres de string2 en string1
+    snprintf(base_de_datos[indice_estant_agreg][0][1], 15, "%d", categ_estant);  // formatea y almacena una serie de caracteres y valores en el almacenamiento intermedio de la matriz
+    strncpy(base_de_datos[indice_estant_agreg][0][2], "-", 15);
+    strncpy(base_de_datos[indice_estant_agreg][0][3], "-", 15);
+    return 0;
+}
+
+int agregar_paquete(int full) {
+    // Notar que el máximo de caracteres posibles a escribir por string es 15
+    // Main pasa el valor de base_full de la estantería que me pide el usuario y se fija si está llena
+    if (full >= 5) {
+        printf("Ya no hay espacio para almacenar más paquetes en esta estantería\n");
+        return -1;
+    }
+
+    // Si no está lleno, pide cada categoría y rellena cada sección del paquete
+    printf("Ingrese categoria: \n");
+    scanf("%14s", paquete_categ);
+    strcpy(base_de_datos[indice_paquete][full+1][0], paquete_categ);
+    printf("Ingrese nombre: \n");
+    scanf("%14s", paquete_nombre);
+    strcpy(base_de_datos[indice_paquete][full+1][1], paquete_nombre);
+    printf("Ingrese fecha de caducidad: \n");
+    scanf("%14s", paquete_fecha);
+    strcpy(base_de_datos[indice_paquete][full+1][2], paquete_fecha);
+
+    return 0;
+}
+
+int eliminar_estanteria() {
+    // Pide el índice de la estantería a eliminar
+    printf("Ingrese el indice de la estanteria a eliminar: ");
+    scanf("%d", &indice_estant_elim);
+
+    if (indice_estant_elim < 0 || indice_estant_elim >= indice_estant_agreg) {
+        printf("Indice de estanteria invalido.\n");
+        return -1;
+    }
+
+    // Limpia la estantería especificada
+    for (int j = 0; j < 6; j++) {
+        for (int k = 0; k < 4; k++) {
+            strncpy(base_de_datos[indice_estant_elim][j][k], "", 15);
+        }
+    }
+
+    // Desplaza las estanterías hacia atrás para llenar el hueco
+    for (int i = indice_estant_elim; i < indice_estant_agreg - 1; i++) {
+        for (int j = 0; j < 6; j++) {
+            for (int k = 0; k < 4; k++) {
+                strncpy(base_de_datos[i][j][k], base_de_datos[i + 1][j][k], 15);
+            }
+        }
+    }
+
+    // Limpia la última estantería ahora duplicada
+    for (int j = 0; j < 6; j++) {
+        for (int k = 0; k < 4; k++) {
+            strncpy(base_de_datos[indice_estant_agreg - 1][j][k], "", 15);
+        }
+    }
+
+    // Decrementa el contador de estanterías
+    indice_estant_agreg--;
+
+    return 0;
+}
+
+int eliminar_paquete() {
+    // Pide el índice de la estantería y del paquete a eliminar
+    printf("Ingrese el indice de la estanteria del paquete a eliminar: ");
+    scanf("%d", &indice_paquete_estant_elim);
+    printf("Ingrese el indice del paquete a eliminar: ");
+    scanf("%d", &indice_paquete_elim);
+
+    if (indice_paquete_estant_elim < 0 || indice_paquete_estant_elim >= indice_estant_agreg) {
+        printf("Indice de estanteria invalido.\n");
+        return -1;
+    }
+
+    if (indice_paquete_elim < 1 || indice_paquete_elim >= 6) {
+        printf("Indice de paquete invalido.\n");
+        return -1;
+    }
+
+    // Limpia el paquete especificado
+    for (int k = 0; k < 4; k++) {
+        strncpy(base_de_datos[indice_paquete_estant_elim][indice_paquete_elim][k], "", 15);
+    }
+
+    return 0;
+}
+
+int listado() {
+    // Itera por toda la matriz y printea
+    for (a = 0; a < indice_estant_agreg; a++) {
+        printf("---Estanteria %d---\n", a);
+        for (b = 0; b < 6; b++) {
+            for (c = 0; c < 4; c++) {
+                printf("%s ", base_de_datos[a][b][c]);
+            }
+            printf("\n");
+        }
+    }
+    return 0;
+}
+
+int porcentaje() {
+    // Regla de tres simples entre las estanterías que hice y las que hay en total
+    porcent = (indice_estant_agreg * 100) / num_estant;
+    printf("Porcentaje de estanterias ocupadas: %d%%\n", porcent);
+    return 0;
+}
+
+int main() {
+    // Pide la cantidad de estanterías que usará la base de datos
+    // Como hay un bucle abajo, solo es una vez
+    printf("Ingrese la cantidad de estanterias del almacen (max 10): ");
+    scanf("%d", &num_estant);
+
+    if (num_estant > 10) {
+        printf("El número máximo de estanterías es 10.\n");
+        return -1;
+    }
+
+    // Defino a cero los valores del array para el contador de si está llena alguna estantería
+    // Base_full cuenta la cantidad de paquetes en cada estantería
+    int base_full[num_estant];
+    for (a = 0; a < num_estant; a++) {
+        base_full[a] = 0;
+    }
+
+    // Bucle
+    while (1) {
+        // Pide la acción que debe ejecutar y ejecuta la función correspondiente (ver cada función arriba)
+        printf("Elija 1 para agregar estanteria \n");
+        printf("Elija 2 para agregar paquete \n");
+        printf("Elija 3 para eliminar estanteria \n");
+        printf("Elija 4 para eliminar paquete \n");
+        printf("Elija 5 para listado \n");
+        printf("Elija 6 para porcentaje de espacio ocupado \n");
+        printf("Elija 0 para salir \n");
+        scanf("%d", &opcion);
+
+        if (opcion == 0) {
+            break;
+        } else if (opcion == 1) {
+            if (agregar_estanteria() == 0) {
+                // El índice de agregar estanterías cuenta cuántas estanterías se hicieron hasta el momento
+                indice_estant_agreg++;
+            }
+        } else if (opcion == 2) {
+            printf("Ingrese la estanteria a la que quiere agregar el paquete: ");
+            scanf("%d", &indice_paquete);
+            if (indice_paquete >= 0 && indice_paquete < indice_estant_agreg) {
+                if (agregar_paquete(base_full[indice_paquete]) == 0) {
+                    // Paquete_full cuenta para saber cuando se llena un paquete
+                    base_full[indice_paquete]++;
+                }
+            } else {
+                printf("Indice de estanteria invalido.\n");
+            }
+        } else if (opcion == 3) {
+            if (eliminar_estanteria() == 0) {
+                // Copie un valor hacia atrás todo el array para sacar la estantería que borré del array que trackea
+                // qué tan llena está cada estantería
+                for (a = indice_estant_elim; a < num_estant - 1; a++) {
+                    base_full[a] = base_full[a + 1];
+                }
+                // Resto 1 al contador de estanterías hechas
+                base_full[indice_estant_agreg] = 0;
+            }
+        } else if (opcion == 4) {
+            if (eliminar_paquete() == 0) {
+                // Resto 1 al número de paquetes en la estantería correspondiente
+                base_full[indice_paquete_estant_elim]--;
+            }
+        } else if (opcion == 5) {
+            listado();
+        } else if (opcion == 6) {
+            porcentaje();
+        } else {
+            printf("Opción inválida.\n");
+        }
+    }
+
+    return 0;
+}
